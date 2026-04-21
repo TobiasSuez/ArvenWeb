@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova Fintech — ARVEN Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#080808; --bg2:#0d0d0d;
+      --fg:#e8e0d0; --fg-dim:#6b6560;
+      --accent:#b8ff3c; --accent2:#ff3c3c; --accent3:#3caaff;
+      --border:rgba(184,255,60,0.15);
+    }
+    *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--fg); font-family:'Barlow Condensed',sans-serif; overflow-x:hidden; cursor:none; }
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:.04; pointer-events:none; z-index:9997; }
+    body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px); pointer-events:none; z-index:9996; }
+
+    #cursor { position:fixed; width:12px; height:12px; background:var(--accent); pointer-events:none; z-index:9999; transform:translate(-50%,-50%); mix-blend-mode:exclusion; transition:width .2s,height .2s; }
+    #cursor-ring { position:fixed; width:36px; height:36px; border:1px solid var(--accent); pointer-events:none; z-index:9998; transform:translate(-50%,-50%); opacity:.5; transition:transform .15s ease-out; }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:center; padding:24px 48px; background:rgba(8,8,8,0.95); border-bottom:1px solid var(--border); }
+    .nav-logo { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:.3em; color:var(--fg); text-decoration:none; }
+    .nav-back { font-family:'Share Tech Mono',monospace; font-size:.65rem; letter-spacing:.2em; color:var(--fg-dim); text-decoration:none; text-transform:uppercase; display:flex; align-items:center; gap:8px; transition:color .2s; }
+    .nav-back:hover { color:var(--accent); }
+    .nav-back::before { content:'←'; color:var(--accent); }
+
+    /* PROJECT HERO */
+    .project-hero { min-height:100vh; display:grid; grid-template-rows:1fr auto; padding-top:73px; position:relative; overflow:hidden; }
+    .hero-visual { position:relative; flex:1; display:flex; align-items:center; justify-content:center; min-height:60vh; }
+    .hero-bg { position:absolute; inset:0; background:linear-gradient(135deg,#0d1a0d 0%,#080808 60%); }
+    .hero-bg-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(184,255,60,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(184,255,60,0.04) 1px,transparent 1px); background-size:60px 60px; animation:gridShift 25s linear infinite; }
+    @keyframes gridShift { from{background-position:0 0} to{background-position:60px 60px} }
+    .hero-bg-text { position:absolute; font-family:'Bebas Neue',sans-serif; font-size:22vw; color:rgba(184,255,60,0.04); letter-spacing:.2em; top:50%; left:50%; transform:translate(-50%,-50%); white-space:nowrap; pointer-events:none; }
+    .hero-center { position:relative; z-index:2; text-align:center; }
+    .hero-logo-mock { width:160px; height:160px; border:2px solid var(--accent); margin:0 auto 40px; display:flex; align-items:center; justify-content:center; clip-path:polygon(20% 0%,80% 0%,100% 20%,100% 80%,80% 100%,20% 100%,0% 80%,0% 20%); background:rgba(184,255,60,0.05); animation:pulseMock 4s ease-in-out infinite; }
+    @keyframes pulseMock { 0%,100%{box-shadow:0 0 0 rgba(184,255,60,0)} 50%{box-shadow:0 0 40px rgba(184,255,60,0.15)} }
+    .hero-logo-inner { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; letter-spacing:.3em; color:var(--accent); }
+
+    .hero-info { padding:48px; border-top:1px solid var(--border); display:grid; grid-template-columns:1fr auto; align-items:end; gap:40px; position:relative; z-index:2; background:rgba(8,8,8,0.8); backdrop-filter:blur(10px); }
+    .hero-breadcrumb { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.25em; color:var(--fg-dim); text-transform:uppercase; margin-bottom:16px; }
+    .hero-breadcrumb span { color:var(--accent); }
+    .hero-project-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(3rem,6vw,6rem); line-height:.9; letter-spacing:.04em; }
+    .hero-project-title em { color:var(--accent); font-style:normal; display:block; }
+    .hero-meta-pills { display:flex; gap:12px; flex-wrap:wrap; }
+    .meta-pill { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.15em; text-transform:uppercase; padding:8px 16px; border:1px solid var(--border); color:var(--fg-dim); }
+    .meta-pill.accent { background:var(--accent); color:var(--bg); border-color:var(--accent); }
+
+    /* STATS BAR */
+    .stats-bar { display:grid; grid-template-columns:repeat(4,1fr); border-bottom:1px solid var(--border); }
+    .stat-cell { padding:40px 48px; border-right:1px solid var(--border); }
+    .stat-cell:last-child { border-right:none; }
+    .stat-val { font-family:'Bebas Neue',sans-serif; font-size:3rem; color:var(--accent); line-height:1; }
+    .stat-lbl { font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:.25em; color:var(--fg-dim); text-transform:uppercase; margin-top:6px; }
+
+    /* CONTENT */
+    .project-content { max-width:1200px; margin:0 auto; padding:0 48px; }
+
+    /* OVERVIEW */
+    .section-block { padding:80px 0; border-bottom:1px solid var(--border); }
+    .section-block:last-child { border-bottom:none; }
+    .block-label { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.4em; color:var(--accent); text-transform:uppercase; margin-bottom:40px; display:flex; align-items:center; gap:12px; }
+    .block-label::before { content:attr(data-n); color:var(--fg-dim); }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+    .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:40px; }
+    .block-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(2rem,4vw,3.5rem); line-height:.95; letter-spacing:.04em; margin-bottom:24px; }
+    .block-title span { color:var(--accent); }
+    .body-text { font-size:1rem; font-weight:300; color:var(--fg-dim); line-height:1.8; letter-spacing:.02em; }
+    .body-text strong { color:var(--fg); font-weight:600; }
+    .body-text + .body-text { margin-top:20px; }
+
+    /* CHALLENGE / SOLUTION CARDS */
+    .cs-card { background:var(--bg2); padding:40px; border:1px solid var(--border); position:relative; }
+    .cs-card::before { content:attr(data-label); position:absolute; top:-1px; left:40px; font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:.3em; color:var(--bg); background:var(--accent); padding:4px 12px; text-transform:uppercase; }
+    .cs-card.alt::before { background:var(--fg-dim); }
+    .cs-text { font-size:1rem; font-weight:300; color:var(--fg-dim); line-height:1.75; margin-top:16px; }
+    .cs-text strong { color:var(--fg); }
+
+    /* VISUAL MOCK SECTIONS */
+    .mock-fullwidth { width:100%; aspect-ratio:16/7; background:var(--bg2); border:1px solid var(--border); position:relative; overflow:hidden; margin:40px 0; display:flex; align-items:center; justify-content:center; }
+    .mock-label { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.25em; color:var(--fg-dim); text-transform:uppercase; }
+    .mock-grid-inner { position:absolute; inset:0; background-image:linear-gradient(rgba(184,255,60,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(184,255,60,0.03) 1px,transparent 1px); background-size:40px 40px; }
+    .mock-half { aspect-ratio:4/3; background:var(--bg2); border:1px solid var(--border); position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+
+    /* COLOR PALETTE */
+    .palette { display:flex; gap:2px; height:80px; margin-top:32px; }
+    .palette-swatch { flex:1; position:relative; }
+    .palette-swatch span { position:absolute; bottom:8px; left:8px; font-family:'Share Tech Mono',monospace; font-size:.5rem; letter-spacing:.1em; color:rgba(255,255,255,.5); }
+
+    /* TYPOGRAPHY SHOWCASE */
+    .type-showcase { background:var(--bg2); padding:48px; border:1px solid var(--border); }
+    .type-display { font-family:'Bebas Neue',sans-serif; font-size:5rem; color:var(--fg); line-height:1; letter-spacing:.1em; margin-bottom:8px; }
+    .type-meta { font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:.2em; color:var(--fg-dim); text-transform:uppercase; margin-bottom:32px; }
+    .type-body-sample { font-family:'Barlow Condensed',sans-serif; font-size:1.1rem; font-weight:300; color:var(--fg-dim); line-height:1.7; }
+
+    /* RESULTS */
+    .results-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2px; }
+    .result-card { background:var(--bg2); padding:48px 40px; border:1px solid transparent; transition:border-color .3s; }
+    .result-card:hover { border-color:var(--border); }
+    .result-num { font-family:'Bebas Neue',sans-serif; font-size:4.5rem; color:var(--accent); line-height:1; }
+    .result-label { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.2em; color:var(--fg-dim); text-transform:uppercase; margin-top:8px; }
+    .result-desc { font-size:.9rem; font-weight:300; color:var(--fg-dim); line-height:1.6; margin-top:16px; }
+
+    /* NEXT PROJECT */
+    .next-project { padding:80px 48px; border-top:1px solid var(--border); display:grid; grid-template-columns:1fr 1fr; align-items:center; }
+    .next-label { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.3em; color:var(--fg-dim); text-transform:uppercase; margin-bottom:16px; }
+    .next-title { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:.06em; color:var(--fg); transition:color .2s; }
+    .next-title:hover { color:var(--accent); }
+    .next-arrow { font-family:'Bebas Neue',sans-serif; font-size:4rem; color:var(--accent); text-align:right; text-decoration:none; display:block; transition:transform .3s; }
+    .next-arrow:hover { transform:translateX(12px); }
+
+    /* REVEAL */
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity .7s ease,transform .7s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    @media(max-width:900px) {
+      nav { padding:20px 24px; }
+      .hero-info { padding:32px 24px; grid-template-columns:1fr; }
+      .stats-bar { grid-template-columns:1fr 1fr; }
+      .stat-cell:nth-child(2) { border-right:none; }
+      .stat-cell:nth-child(3) { border-top:1px solid var(--border); }
+      .project-content { padding:0 24px; }
+      .two-col,.three-col { grid-template-columns:1fr; gap:40px; }
+      .results-grid { grid-template-columns:1fr; }
+      .next-project { grid-template-columns:1fr; padding:60px 24px; }
+      .next-arrow { text-align:left; font-size:2.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <nav>
+    <a href="index.html" class="nav-logo">ARVEN</a>
+    <a href="proyectos.html" class="nav-back">Todos los proyectos</a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="project-hero">
+    <div class="hero-visual">
+      <div class="hero-bg"></div>
+      <div class="hero-bg-grid"></div>
+      <div class="hero-bg-text">NOVA</div>
+      <div class="hero-center">
+        <div class="hero-logo-mock">
+          <div class="hero-logo-inner">NF</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-info">
+      <div>
+        <div class="hero-breadcrumb">ARVEN Studio <span>/</span> Proyectos <span>/</span> Nova Fintech</div>
+        <h1 class="hero-project-title">NOVA<em>FINTECH</em></h1>
+      </div>
+      <div class="hero-meta-pills">
+        <span class="meta-pill accent">Branding</span>
+        <span class="meta-pill">UI/UX</span>
+        <span class="meta-pill">Desarrollo Web</span>
+        <span class="meta-pill">2024</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar reveal">
+    <div class="stat-cell">
+      <div class="stat-val">4×</div>
+      <div class="stat-lbl">Aumento en conversiones</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val">12</div>
+      <div class="stat-lbl">Semanas de proyecto</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val">3</div>
+      <div class="stat-lbl">Disciplinas integradas</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val">100%</div>
+      <div class="stat-lbl">Desde cero</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="project-content">
+
+    <!-- OVERVIEW -->
+    <div class="section-block">
+      <div class="block-label" data-n="01 —">Contexto del proyecto</div>
+      <div class="two-col reveal">
+        <div>
+          <h2 class="block-title">UNA STARTUP<br>QUE NECESITABA<br><span>EXISTIR</span></h2>
+        </div>
+        <div>
+          <p class="body-text">Nova Fintech llegó a Arven con un producto sólido pero sin identidad. Tenían tecnología de punta para pagos B2B, un equipo excepcional y tracción inicial — pero ninguna presencia visual que estuviera a la altura.</p>
+          <p class="body-text">El desafío era <strong>construir desde cero</strong> un ecosistema de marca completo: naming, identidad visual, plataforma digital y estrategia de comunicación. Todo en 12 semanas, listo para su ronda seed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHALLENGE / SOLUTION -->
+    <div class="section-block">
+      <div class="block-label" data-n="02 —">Problema y solución</div>
+      <div class="two-col reveal">
+        <div class="cs-card" data-label="El desafío">
+          <p class="cs-text">El mercado fintech está saturado de identidades genéricas — azules corporativos, tipografías sans-serif anodinas, lenguaje técnico inaccesible. <strong>Nova necesitaba diferenciarse</strong> sin perder la credibilidad que exige el sector financiero.</p>
+          <p class="cs-text" style="margin-top:16px">Además, la plataforma debía manejar flujos de pago complejos de forma simple. <strong>UX para procesos B2B complicados que se sintiera consumer.</strong></p>
+        </div>
+        <div class="cs-card alt" data-label="La solución">
+          <p class="cs-text">Desarrollamos un sistema de identidad que juega con la <strong>tensión entre precisión tecnológica y claridad humana</strong>. Formas geométricas exactas, tipografía condensada de impacto, y una paleta que evita el azul convencional.</p>
+          <p class="cs-text" style="margin-top:16px">La plataforma se construyó con un sistema de componentes modular, priorizando la reducción de fricción en cada paso del flujo de pago.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRAND IDENTITY -->
+    <div class="section-block">
+      <div class="block-label" data-n="03 —">Identidad visual</div>
+      <div class="reveal">
+        <div class="two-col" style="margin-bottom:48px">
+          <div>
+            <h2 class="block-title">SISTEMA<br><span>VISUAL</span></h2>
+            <p class="body-text">El sistema de identidad se construyó alrededor de un concepto central: <strong>la precisión como confianza</strong>. Cada elemento visual transmite exactitud, velocidad y control.</p>
+          </div>
+          <div class="type-showcase">
+            <div class="type-display">NOVA</div>
+            <div class="type-meta">// Bebas Neue — Display Principal</div>
+            <div class="type-body-sample">Pagos que fluyen. Negocios que crecen. La velocidad de la tecnología con la seguridad que necesitás.</div>
+          </div>
+        </div>
+
+        <!-- COLOR PALETTE -->
+        <div class="palette">
+          <div class="palette-swatch" style="background:#0a0f0a"><span>#0A0F0A</span></div>
+          <div class="palette-swatch" style="background:#b8ff3c; flex:2"><span>#B8FF3C</span></div>
+          <div class="palette-swatch" style="background:#e8e0d0"><span>#E8E0D0</span></div>
+          <div class="palette-swatch" style="background:#1a3a1a"><span>#1A3A1A</span></div>
+          <div class="palette-swatch" style="background:#ff3c3c"><span>#FF3C3C</span></div>
+        </div>
+
+        <!-- MOCK SCREENS -->
+        <div class="mock-fullwidth" style="margin-top:48px">
+          <div class="mock-grid-inner"></div>
+          <div style="text-align:center; position:relative; z-index:2">
+            <div style="font-family:'Bebas Neue',sans-serif; font-size:4rem; color:var(--accent); letter-spacing:.3em; margin-bottom:8px">NOVA</div>
+            <div style="font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.3em; color:var(--fg-dim)">// PANTALLA PRINCIPAL — DASHBOARD</div>
+            <div style="margin-top:32px; display:flex; gap:24px; justify-content:center">
+              <div style="width:160px; height:80px; background:rgba(184,255,60,0.08); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.1em; color:var(--accent)">$128.4K</div>
+              <div style="width:160px; height:80px; background:rgba(184,255,60,0.04); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.1em; color:var(--fg-dim)">342 TX</div>
+              <div style="width:160px; height:80px; background:rgba(184,255,60,0.04); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.1em; color:var(--fg-dim)">99.8% UP</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="three-col" style="margin-top:2px">
+          <div class="mock-half">
+            <div class="mock-grid-inner"></div>
+            <div style="position:relative;z-index:2;text-align:center">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--accent);letter-spacing:.2em">LOGO</div>
+              <div class="mock-label">Variante principal</div>
+            </div>
+          </div>
+          <div class="mock-half">
+            <div class="mock-grid-inner"></div>
+            <div style="position:relative;z-index:2;text-align:center">
+              <div style="width:60px;height:60px;border:2px solid var(--accent);margin:0 auto 12px;clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);background:rgba(184,255,60,.1)"></div>
+              <div class="mock-label">Ícono / Avatar</div>
+            </div>
+          </div>
+          <div class="mock-half">
+            <div class="mock-grid-inner"></div>
+            <div style="position:relative;z-index:2;text-align:center">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--fg-dim);letter-spacing:.2em">NOVA FINTECH</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--fg-dim);letter-spacing:.15em;margin-top:4px">Pagos B2B Inteligentes</div>
+              <div class="mock-label" style="margin-top:12px">Versión horizontal</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEB / DIGITAL -->
+    <div class="section-block">
+      <div class="block-label" data-n="04 —">Plataforma digital</div>
+      <div class="two-col reveal">
+        <div>
+          <h2 class="block-title">UX PARA<br><span>PAGOS</span><br>COMPLEJOS</h2>
+          <p class="body-text" style="margin-top:24px">Redujimos un flujo de pago B2B de 12 pasos a 4. El sistema de componentes permite escalar sin perder coherencia visual ni usabilidad.</p>
+          <p class="body-text" style="margin-top:16px">Stack: <strong>Next.js + TypeScript</strong> en frontend, diseño en Figma con sistema de tokens y handoff automático.</p>
+        </div>
+        <div>
+          <div style="background:var(--bg2); padding:32px; border:1px solid var(--border);">
+            <div style="font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:.25em; color:var(--accent); text-transform:uppercase; margin-bottom:24px">// Stack tecnológico</div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border);">
+                <span style="font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg-dim); letter-spacing:.1em">FRONTEND</span>
+                <span style="font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg); letter-spacing:.1em">Next.js + TypeScript</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border);">
+                <span style="font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg-dim); letter-spacing:.1em">DISEÑO</span>
+                <span style="font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg); letter-spacing:.1em">Figma + Design Tokens</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border);">
+                <span style="font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg-dim); letter-spacing:.1em">ANIMACIÓN</span>
+                <span style="font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg); letter-spacing:.1em">Framer Motion</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0;">
+                <span style="font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg-dim); letter-spacing:.1em">DEPLOY</span>
+                <span style="font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg); letter-spacing:.1em">Vercel + CI/CD</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="section-block">
+      <div class="block-label" data-n="05 —">Resultados</div>
+      <div class="reveal" style="margin-bottom:48px">
+        <h2 class="block-title">LO QUE<br><span>LOGRAMOS</span></h2>
+      </div>
+      <div class="results-grid reveal">
+        <div class="result-card">
+          <div class="result-num">4×</div>
+          <div class="result-lbl">Aumento en tasa de conversión</div>
+          <p class="result-desc">La nueva experiencia de onboarding redujo el abandono del funnel del 68% al 17% en los primeros 30 días post-lanzamiento.</p>
+        </div>
+        <div class="result-card">
+          <div class="result-num">$2.1M</div>
+          <div class="result-lbl">Ronda seed cerrada</div>
+          <p class="result-desc">El pitch deck y la identidad visual jugaron un rol clave en la ronda seed cerrada 6 semanas después del lanzamiento.</p>
+        </div>
+        <div class="result-card">
+          <div class="result-num">12 sem</div>
+          <div class="result-lbl">De cero a lanzamiento</div>
+          <p class="result-desc">Naming, identidad, plataforma y estrategia completa entregados en tiempo récord sin sacrificar calidad.</p>
+        </div>
+        <div class="result-card">
+          <div class="result-num">98%</div>
+          <div class="result-lbl">Satisfacción del cliente</div>
+          <p class="result-desc">El equipo de Nova describió la experiencia como "exactamente lo que necesitábamos, cuando lo necesitábamos".</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTIMONIAL -->
+    <div class="section-block reveal">
+      <div style="background:var(--bg2); padding:64px; border:1px solid var(--border); border-left:3px solid var(--accent); position:relative;">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:8rem; color:rgba(184,255,60,0.08); position:absolute; top:-20px; left:48px; line-height:1">"</div>
+        <p style="font-family:'Barlow Condensed',sans-serif; font-size:1.4rem; font-weight:300; color:var(--fg); line-height:1.6; letter-spacing:.03em; position:relative; z-index:1">Arven no solo diseñó nuestra marca — nos ayudó a entender quiénes éramos como empresa. El resultado fue más de lo que imaginábamos cuando llegamos con solo una idea.</p>
+        <div style="margin-top:32px; display:flex; align-items:center; gap:16px;">
+          <div style="width:40px; height:40px; background:var(--accent); clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)"></div>
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:.1em; color:var(--fg)">MARTÍN VALDEZ</div>
+            <div style="font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:.2em; color:var(--fg-dim); text-transform:uppercase">CEO, Nova Fintech</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end project-content -->
+
+  <!-- NEXT PROJECT -->
+  <div class="next-project reveal">
+    <div>
+      <div class="next-label">// Siguiente proyecto</div>
+      <a href="proyecto.html" class="next-title" style="text-decoration:none; display:block">KAIROS RETAIL</a>
+      <div style="margin-top:12px; font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.2em; color:var(--fg-dim); text-transform:uppercase">Marketing Digital — 2024</div>
+    </div>
+    <a href="proyecto.html" class="next-arrow">→</a>
+  </div>
+
+  <script>
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+    (function animRing(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+    document.querySelectorAll('a,button').forEach(el => {
+      el.addEventListener('mouseenter',()=>{ cursor.style.width='22px'; cursor.style.height='22px'; ring.style.opacity='1'; ring.style.transform='translate(-50%,-50%) scale(1.5)'; });
+      el.addEventListener('mouseleave',()=>{ cursor.style.width='12px'; cursor.style.height='12px'; ring.style.opacity='.5'; ring.style.transform='translate(-50%,-50%) scale(1)'; });
+    });
+    const obs = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), { threshold:.08 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyectos — ARVEN Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080808; --bg2: #0d0d0d;
+      --fg: #e8e0d0; --fg-dim: #6b6560;
+      --accent: #b8ff3c; --accent2: #ff3c3c; --accent3: #3caaff;
+      --border: rgba(184,255,60,0.15);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--fg); font-family:'Barlow Condensed',sans-serif; overflow-x:hidden; cursor:none; }
+
+    /* NOISE + SCANLINES */
+    body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9997; }
+    body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px); pointer-events:none; z-index:9996; }
+
+    /* CURSOR */
+    #cursor { position:fixed; width:12px; height:12px; background:var(--accent); pointer-events:none; z-index:9999; transform:translate(-50%,-50%); mix-blend-mode:exclusion; transition:width .2s,height .2s; }
+    #cursor-ring { position:fixed; width:36px; height:36px; border:1px solid var(--accent); pointer-events:none; z-index:9998; transform:translate(-50%,-50%); opacity:.5; transition:transform .15s ease-out,opacity .2s; }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:center; padding:24px 48px; background:rgba(8,8,8,0.95); border-bottom:1px solid var(--border); }
+    .nav-logo { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:.3em; color:var(--fg); text-decoration:none; }
+    .nav-back { font-family:'Share Tech Mono',monospace; font-size:.65rem; letter-spacing:.2em; color:var(--fg-dim); text-decoration:none; text-transform:uppercase; display:flex; align-items:center; gap:8px; transition:color .2s; }
+    .nav-back:hover { color:var(--accent); }
+    .nav-back::before { content:'←'; color:var(--accent); }
+    .nav-links { display:flex; gap:32px; list-style:none; }
+    .nav-links a { font-family:'Share Tech Mono',monospace; font-size:.65rem; letter-spacing:.2em; color:var(--fg-dim); text-decoration:none; text-transform:uppercase; transition:color .2s; }
+    .nav-links a:hover { color:var(--fg); }
+
+    /* HERO HEADER */
+    .page-hero { padding:160px 48px 80px; position:relative; overflow:hidden; border-bottom:1px solid var(--border); }
+    .page-hero::before { content:'WORK'; position:absolute; right:-40px; top:50%; transform:translateY(-50%); font-family:'Bebas Neue',sans-serif; font-size:14rem; color:rgba(184,255,60,0.03); letter-spacing:.2em; pointer-events:none; white-space:nowrap; }
+    .hero-top { display:flex; justify-content:space-between; align-items:flex-end; }
+    .hero-label { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.4em; color:var(--accent); text-transform:uppercase; margin-bottom:16px; }
+    .hero-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(4rem,8vw,8rem); line-height:.88; letter-spacing:.02em; }
+    .hero-title span { color:var(--accent); }
+    .hero-count { font-family:'Bebas Neue',sans-serif; font-size:5rem; color:var(--fg-dim); line-height:1; text-align:right; }
+    .hero-count small { display:block; font-family:'Share Tech Mono',monospace; font-size:.55rem; color:var(--fg-dim); letter-spacing:.3em; }
+
+    /* FILTERS */
+    .filters-bar { padding:32px 48px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:0; flex-wrap:wrap; position:sticky; top:73px; background:rgba(8,8,8,0.97); z-index:50; backdrop-filter:blur(10px); }
+    .filter-label { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.3em; color:var(--fg-dim); text-transform:uppercase; margin-right:32px; }
+    .filter-btn { font-family:'Share Tech Mono',monospace; font-size:.65rem; letter-spacing:.15em; color:var(--fg-dim); background:none; border:1px solid transparent; padding:8px 20px; cursor:none; text-transform:uppercase; transition:all .2s; }
+    .filter-btn:hover { color:var(--fg); border-color:var(--border); }
+    .filter-btn.active { color:var(--bg); background:var(--accent); border-color:var(--accent); }
+    .filters-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
+    .view-btn { background:none; border:1px solid var(--border); padding:8px 12px; cursor:none; color:var(--fg-dim); transition:all .2s; }
+    .view-btn.active { border-color:var(--accent); color:var(--accent); }
+    .view-btn svg { display:block; width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.5; }
+
+    /* PROJECTS GRID */
+    .projects-section { padding:48px 48px 120px; }
+    .projects-container { display:grid; gap:2px; transition:all .3s; }
+    .projects-container.grid-view { grid-template-columns:repeat(3,1fr); }
+    .projects-container.list-view { grid-template-columns:1fr; }
+
+    /* PROJECT CARD */
+    .project-item { background:var(--bg2); position:relative; overflow:hidden; cursor:none; transition:transform .3s,border-color .3s; border:1px solid transparent; }
+    .project-item:hover { border-color:var(--border); transform:translateY(-4px); }
+    .project-item.hidden { display:none; }
+
+    /* GRID CARD */
+    .grid-view .project-item { padding:0; }
+    .project-thumb { width:100%; aspect-ratio:4/3; position:relative; overflow:hidden; }
+    .project-thumb-bg { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+    .project-thumb-label { font-family:'Bebas Neue',sans-serif; font-size:5rem; letter-spacing:.3em; opacity:.07; }
+    .project-thumb-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(184,255,60,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(184,255,60,0.05) 1px,transparent 1px); background-size:40px 40px; }
+    .project-thumb-accent { position:absolute; width:80px; height:80px; border:1px solid rgba(184,255,60,0.2); clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%); top:50%; left:50%; transform:translate(-50%,-50%); }
+    .project-thumb-overlay { position:absolute; inset:0; background:linear-gradient(to top,var(--bg2) 0%,transparent 50%); }
+    .project-info { padding:28px; }
+    .project-meta-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .project-cat { font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:.2em; color:var(--accent); text-transform:uppercase; border:1px solid rgba(184,255,60,.3); padding:3px 8px; }
+    .project-yr { font-family:'Share Tech Mono',monospace; font-size:.55rem; color:var(--fg-dim); letter-spacing:.1em; }
+    .project-name-card { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:.06em; color:var(--fg); margin-bottom:8px; }
+    .project-desc-card { font-size:.85rem; font-weight:300; color:var(--fg-dim); line-height:1.6; }
+    .project-tags-row { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+    .ptag { font-family:'Share Tech Mono',monospace; font-size:.5rem; letter-spacing:.12em; color:var(--fg-dim); border:1px solid rgba(255,255,255,.06); padding:3px 8px; text-transform:uppercase; }
+    .project-cta { display:flex; align-items:center; justify-content:space-between; margin-top:24px; padding-top:20px; border-top:1px solid var(--border); }
+    .project-cta a { font-family:'Share Tech Mono',monospace; font-size:.6rem; letter-spacing:.15em; color:var(--accent); text-decoration:none; text-transform:uppercase; transition:letter-spacing .2s; }
+    .project-item:hover .project-cta a { letter-spacing:.25em; }
+
+    /* LIST CARD */
+    .list-view .project-item { padding:32px 48px; display:grid; grid-template-columns:80px 1fr 200px 160px 120px; align-items:center; gap:40px; }
+    .list-view .project-thumb { display:none; }
+    .list-view .project-info { padding:0; display:contents; }
+    .list-view .project-meta-row { display:none; }
+    .list-view .project-num { font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--fg-dim); letter-spacing:.1em; }
+    .list-view .project-name-card { font-size:1.8rem; margin-bottom:0; }
+    .list-view .project-desc-card { font-size:.8rem; }
+    .list-view .project-tags-row { margin-top:0; }
+    .list-view .project-cta { margin-top:0; padding-top:0; border-top:none; }
+    .list-num { font-family:'Share Tech Mono',monospace; font-size:.6rem; color:var(--fg-dim); letter-spacing:.1em; display:none; }
+    .list-view .list-num { display:block; }
+    .list-view .project-yr-list { display:block; }
+    .project-yr-list { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; color:var(--fg-dim); display:none; }
+    .list-cat-pill { display:none; }
+    .list-view .list-cat-pill { display:block; font-family:'Share Tech Mono',monospace; font-size:.55rem; letter-spacing:.15em; color:var(--accent); text-transform:uppercase; }
+
+    /* FEATURED ROW */
+    .featured-row { display:grid; grid-template-columns:2fr 1fr; gap:2px; margin-bottom:2px; }
+    .grid-view .featured-row { display:grid; }
+    .list-view .featured-row { display:block; }
+
+    /* EMPTY STATE */
+    .empty-state { grid-column:1/-1; padding:120px; text-align:center; display:none; }
+    .empty-state.visible { display:block; }
+    .empty-title { font-family:'Bebas Neue',sans-serif; font-size:3rem; color:var(--fg-dim); letter-spacing:.2em; }
+    .empty-sub { font-family:'Share Tech Mono',monospace; font-size:.65rem; color:var(--fg-dim); letter-spacing:.2em; margin-top:12px; }
+
+    /* REVEAL */
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity .6s ease,transform .6s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+
+    @media(max-width:900px) {
+      nav { padding:20px 24px; }
+      .nav-links { display:none; }
+      .page-hero { padding:120px 24px 60px; }
+      .hero-top { flex-direction:column; align-items:flex-start; gap:24px; }
+      .filters-bar { padding:20px 24px; top:69px; }
+      .projects-section { padding:32px 24px 80px; }
+      .projects-container.grid-view { grid-template-columns:1fr 1fr; }
+      .featured-row { grid-template-columns:1fr; }
+      .list-view .project-item { grid-template-columns:1fr; gap:12px; padding:24px; }
+      .list-num,.project-yr-list,.list-cat-pill { display:none !important; }
+      .list-view .project-desc-card { display:none; }
+    }
+    @media(max-width:600px) {
+      .projects-container.grid-view { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+
+  <nav>
+    <a href="index.html" class="nav-logo">ARVEN</a>
+    <ul class="nav-links">
+      <li><a href="index.html#services">Servicios</a></li>
+      <li><a href="index.html#about">Nosotros</a></li>
+      <li><a href="index.html#process">Proceso</a></li>
+      <li><a href="proyectos.html" style="color:var(--accent)">Proyectos</a></li>
+    </ul>
+    <a href="index.html" class="nav-back">Volver al inicio</a>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="hero-top reveal">
+      <div>
+        <div class="hero-label">// Portfolio completo</div>
+        <h1 class="hero-title">TODOS LOS<br><span>PROYECTOS</span></h1>
+      </div>
+      <div class="hero-count">
+        <span id="visible-count">08</span>
+        <small>PROYECTOS ACTIVOS</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-bar">
+    <span class="filter-label">Filtrar:</span>
+    <button class="filter-btn active" data-filter="all">Todos</button>
+    <button class="filter-btn" data-filter="branding">Branding</button>
+    <button class="filter-btn" data-filter="web">Web & App</button>
+    <button class="filter-btn" data-filter="marketing">Marketing</button>
+    <button class="filter-btn" data-filter="identidad">Identidad</button>
+    <div class="filters-right">
+      <button class="view-btn active" id="grid-btn" title="Vista grilla">
+        <svg viewBox="0 0 20 20"><rect x="2" y="2" width="7" height="7"/><rect x="11" y="2" width="7" height="7"/><rect x="2" y="11" width="7" height="7"/><rect x="11" y="11" width="7" height="7"/></svg>
+      </button>
+      <button class="view-btn" id="list-btn" title="Vista lista">
+        <svg viewBox="0 0 20 20"><line x1="2" y1="5" x2="18" y2="5"/><line x1="2" y1="10" x2="18" y2="10"/><line x1="2" y1="15" x2="18" y2="15"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div class="projects-section">
+    <div class="projects-container grid-view" id="projects-container">
+
+      <!-- FEATURED ROW -->
+      <div class="featured-row">
+        <div class="project-item reveal" data-category="branding web" data-index="1">
+          <div class="project-thumb">
+            <div class="project-thumb-bg" style="background:linear-gradient(135deg,#0d1a0d,#0d0d0d)">
+              <span class="project-thumb-label" style="color:var(--accent)">NOVA</span>
+            </div>
+            <div class="project-thumb-grid"></div>
+            <div class="project-thumb-accent"></div>
+            <div class="project-thumb-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div class="list-num">01</div>
+            <div class="project-meta-row">
+              <span class="project-cat">Branding + Web</span>
+              <span class="project-yr">2024</span>
+            </div>
+            <div class="project-name-card">NOVA FINTECH</div>
+            <p class="project-desc-card">Identidad completa y plataforma digital para startup de pagos B2B. Desde el naming hasta el MVP, un sistema cohesivo que comunica confianza y tecnología.</p>
+            <div class="project-tags-row">
+              <span class="ptag">Naming</span><span class="ptag">Branding</span><span class="ptag">UI/UX</span><span class="ptag">React</span>
+            </div>
+            <div class="project-cta">
+              <a href="proyecto.html">Ver caso completo</a>
+              <span class="project-yr-list">2024</span>
+              <span class="list-cat-pill">Branding + Web</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-item reveal" style="transition-delay:.1s" data-category="marketing" data-index="2">
+          <div class="project-thumb">
+            <div class="project-thumb-bg" style="background:linear-gradient(135deg,#1a0d0d,#0d0d0d)">
+              <span class="project-thumb-label" style="color:var(--accent2)">KAI</span>
+            </div>
+            <div class="project-thumb-grid"></div>
+            <div class="project-thumb-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div class="list-num">02</div>
+            <div class="project-meta-row">
+              <span class="project-cat">Marketing Digital</span>
+              <span class="project-yr">2024</span>
+            </div>
+            <div class="project-name-card">KAIROS RETAIL</div>
+            <p class="project-desc-card">Estrategia 360° que multiplicó por 4 el ROAS en campañas de performance.</p>
+            <div class="project-tags-row">
+              <span class="ptag">SEO/SEM</span><span class="ptag">Paid Social</span><span class="ptag">Analytics</span>
+            </div>
+            <div class="project-cta">
+              <a href="proyecto.html">Ver caso completo</a>
+              <span class="project-yr-list">2024</span>
+              <span class="list-cat-pill">Marketing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REGULAR GRID -->
+      <div class="project-item reveal" style="transition-delay:.15s" data-category="identidad" data-index="3">
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#0d1a12,#0d0d0d)">
+            <span class="project-thumb-label" style="color:#3cffaa">VRD</span>
+          </div>
+          <div class="project-thumb-grid"></div>
+          <div class="project-thumb-overlay"></div>
+        </div>
+        <div class="project-info">
+          <div class="list-num">03</div>
+          <div class="project-meta-row">
+            <span class="project-cat">Identidad Visual</span>
+            <span class="project-yr">2023</span>
+          </div>
+          <div class="project-name-card">VERDE STUDIO</div>
+          <p class="project-desc-card">Sistema de identidad para estudio de arquitectura sostenible en LATAM.</p>
+          <div class="project-tags-row">
+            <span class="ptag">Logo</span><span class="ptag">Sistema Visual</span><span class="ptag">Editorial</span>
+          </div>
+          <div class="project-cta">
+            <a href="proyecto.html">Ver caso completo</a>
+            <span class="project-yr-list">2023</span>
+            <span class="list-cat-pill">Identidad</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-item reveal" style="transition-delay:.2s" data-category="web" data-index="4">
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#0d0d1a,#0d0d0d)">
+            <span class="project-thumb-label" style="color:var(--accent3)">ORX</span>
+          </div>
+          <div class="project-thumb-grid"></div>
+          <div class="project-thumb-overlay"></div>
+        </div>
+        <div class="project-info">
+          <div class="list-num">04</div>
+          <div class="project-meta-row">
+            <span class="project-cat">Desarrollo + UX</span>
+            <span class="project-yr">2023</span>
+          </div>
+          <div class="project-name-card">OREX LOGISTICS</div>
+          <p class="project-desc-card">Plataforma de gestión logística. UX para operaciones complejas, simple para el usuario.</p>
+          <div class="project-tags-row">
+            <span class="ptag">UX Research</span><span class="ptag">Next.js</span><span class="ptag">Dashboard</span>
+          </div>
+          <div class="project-cta">
+            <a href="proyecto.html">Ver caso completo</a>
+            <span class="project-yr-list">2023</span>
+            <span class="list-cat-pill">Web & App</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-item reveal" style="transition-delay:.25s" data-category="branding" data-index="5">
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#1a1a0d,#0d0d0d)">
+            <span class="project-thumb-label" style="color:#ffcc3c">SOL</span>
+          </div>
+          <div class="project-thumb-grid"></div>
+          <div class="project-thumb-overlay"></div>
+        </div>
+        <div class="project-info">
+          <div class="list-num">05</div>
+          <div class="project-meta-row">
+            <span class="project-cat">Branding</span>
+            <span class="project-yr">2023</span>
+          </div>
+          <div class="project-name-card">SOLARA FOODS</div>
+          <p class="project-desc-card">Rebranding completo para empresa de alimentos premium. Packaging y comunicación.</p>
+          <div class="project-tags-row">
+            <span class="ptag">Rebranding</span><span class="ptag">Packaging</span><span class="ptag">RRSS</span>
+          </div>
+          <div class="project-cta">
+            <a href="proyecto.html">Ver caso completo</a>
+            <span class="project-yr-list">2023</span>
+            <span class="list-cat-pill">Branding</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-item reveal" style="transition-delay:.3s" data-category="web marketing" data-index="6">
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#1a0d1a,#0d0d0d)">
+            <span class="project-thumb-label" style="color:#cc3cff">PLS</span>
+          </div>
+          <div class="project-thumb-grid"></div>
+          <div class="project-thumb-overlay"></div>
+        </div>
+        <div class="project-info">
+          <div class="list-num">06</div>
+          <div class="project-meta-row">
+            <span class="project-cat">Web + Marketing</span>
+            <span class="project-yr">2022</span>
+          </div>
+          <div class="project-name-card">PULSE HEALTH</div>
+          <p class="project-desc-card">Ecosistema digital para clínica privada. Web, app mobile y campaña de lanzamiento.</p>
+          <div class="project-tags-row">
+            <span class="ptag">Web</span><span class="ptag">App</span><span class="ptag">Campaña</span>
+          </div>
+          <div class="project-cta">
+            <a href="proyecto.html">Ver caso completo</a>
+            <span class="project-yr-list">2022</span>
+            <span class="list-cat-pill">Web + Marketing</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-item reveal" style="transition-delay:.35s" data-category="identidad branding" data-index="7">
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#0d1518,#0d0d0d)">
+            <span class="project-thumb-label" style="color:#3cddff">AXN</span>
+          </div>
+          <div class="project-thumb-grid"></div>
+          <div class="project-thumb-overlay"></div>
+        </div>
+        <div class="project-info">
+          <div class="list-num">07</div>
+          <div class="project-meta-row">
+            <span class="project-cat">Identidad + Brand</span>
+            <span class="project-yr">2022</span>
+          </div>
+          <div class="project-name-card">AXON TECH</div>
+          <p class="project-desc-card">Identidad visual para consultora tecnológica. Sistema completo desde logo hasta pitch deck.</p>
+          <div class="project-tags-row">
+            <span class="ptag">Logo</span><span class="ptag">Papelería</span><span class="ptag">Presentaciones</span>
+          </div>
+          <div class="project-cta">
+            <a href="proyecto.html">Ver caso completo</a>
+            <span class="project-yr-list">2022</span>
+            <span class="list-cat-pill">Identidad</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-item reveal" style="transition-delay:.4s" data-category="web" data-index="8">
+        <div class="project-thumb">
+          <div class="project-thumb-bg" style="background:linear-gradient(135deg,#181208,#0d0d0d)">
+            <span class="project-thumb-label" style="color:#ff8c3c">MRK</span>
+          </div>
+          <div class="project-thumb-grid"></div>
+          <div class="project-thumb-overlay"></div>
+        </div>
+        <div class="project-info">
+          <div class="list-num">08</div>
+          <div class="project-meta-row">
+            <span class="project-cat">E-commerce</span>
+            <span class="project-yr">2022</span>
+          </div>
+          <div class="project-name-card">MERKADO CRAFT</div>
+          <p class="project-desc-card">Tienda online para artesanos locales. Diseño, desarrollo y estrategia de adquisición.</p>
+          <div class="project-tags-row">
+            <span class="ptag">E-commerce</span><span class="ptag">Shopify</span><span class="ptag">UX</span>
+          </div>
+          <div class="project-cta">
+            <a href="proyecto.html">Ver caso completo</a>
+            <span class="project-yr-list">2022</span>
+            <span class="list-cat-pill">Web</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" id="empty-state">
+        <div class="empty-title">SIN RESULTADOS</div>
+        <div class="empty-sub">// No hay proyectos con ese filtro</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // CURSOR
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+    (function animRing(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); })();
+    document.querySelectorAll('a,button,.project-item').forEach(el => {
+      el.addEventListener('mouseenter',()=>{ cursor.style.width='22px'; cursor.style.height='22px'; ring.style.opacity='1'; ring.style.transform='translate(-50%,-50%) scale(1.5)'; });
+      el.addEventListener('mouseleave',()=>{ cursor.style.width='12px'; cursor.style.height='12px'; ring.style.opacity='.5'; ring.style.transform='translate(-50%,-50%) scale(1)'; });
+    });
+
+    // FILTERS
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const items = document.querySelectorAll('.project-item');
+    const emptyState = document.getElementById('empty-state');
+    const visibleCount = document.getElementById('visible-count');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        let count = 0;
+        items.forEach(item => {
+          const cats = item.dataset.category || '';
+          if (filter === 'all' || cats.includes(filter)) {
+            item.classList.remove('hidden');
+            count++;
+          } else {
+            item.classList.add('hidden');
+          }
+        });
+        visibleCount.textContent = String(count).padStart(2,'0');
+        emptyState.classList.toggle('visible', count === 0);
+      });
+    });
+
+    // VIEW TOGGLE
+    const container = document.getElementById('projects-container');
+    document.getElementById('grid-btn').addEventListener('click', function() {
+      container.classList.remove('list-view'); container.classList.add('grid-view');
+      this.classList.add('active'); document.getElementById('list-btn').classList.remove('active');
+    });
+    document.getElementById('list-btn').addEventListener('click', function() {
+      container.classList.remove('grid-view'); container.classList.add('list-view');
+      this.classList.add('active'); document.getElementById('grid-btn').classList.remove('active');
+    });
+
+    // REVEAL
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), { threshold:.08 });
+    reveals.forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
